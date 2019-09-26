@@ -1,0 +1,1 @@
+Data for the Notch2 conditional knockout experiment. Contains the summarised read counts for three wild type (WT) and three knockout (KO) samples for both mRNA- and miRNA-Seq.

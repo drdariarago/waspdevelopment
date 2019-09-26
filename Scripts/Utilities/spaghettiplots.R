@@ -1,0 +1,10 @@
+### replicates
+library(stringr)
+a<-melt(clusterassignments_full[which(clusterassignments_full$clusterID=="antiquewhite4"),])
+a$splicing<-ifelse(grepl("con", a$X),"constitutive","spliced")
+a$replicate<-as.factor(str_extract(string = a$variable, pattern = ".$"))
+a$stage<-as.factor(str_extract(string=a$variable, pattern="^[[:alnum:]]*"))
+a$stage<-factor(a$stage, levels=c("emb10","emb18","lar51","pupyel","adult"))
+a$sex<-grepl("female", a$variable)
+a$grouper<-as.factor(paste(a$stage, a$sex))
+ggplot(a, aes(x=stage, y=value+100, group=X, col=replicate, group=grouper))+facet_grid(sex~splicing)+geom_smooth(se=F)+geom_point(position="jitter")+theme_bw()+scale_y_log10()

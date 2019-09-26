@@ -1,0 +1,30 @@
+maxcorescatter .7	mingap .1 	grey = 923		256 clusters
+maxcorescatter .7	mingap .3 	grey = 1306		144 clusters
+maxcorescatter NA	mingap NA 	grey = 1276 		153 clusters
+maxcorescatter .6	mingap .1 	grey = 1383		175 clusters
+maxcorescatter .7	mingap .4 	grey = 1794		91 clusters
+maxcorescatter .6	mingap .3 	grey = 1811		131 clusters
+maxcorescatter .5	mingap .1 	grey = 1866		132 clusters
++ minabsheight .2			grey = 1866		132 clusters
+maxcorescatter .6	mingap .5 	grey = 1811		131 clusters
+maxcorescatter .25	mingap .1-.5 	grey = 5109		66 clusters
+maxcorescatter .6	mingap .6 	grey = 5029		50 clusters
+maxcorescatter .15	mingap .1-.05 	grey = 8978-8981	48 clusters
+maxcorescatter .3	mingap .6 	grey = 6447		47 clusters
+maxcorescatter .1	mingap .01 	grey = 9056		41 clusters
+
+deepsplit = 0 		grey = 1276 		153 clusters
+deepsplit = 1 		grey = 1011		208 clusters
+deepsplit = 2 		grey = 719		328 clusters
+deepsplit = 3 		grey = 197		467 clusters
+deepsplit = 4 		grey = 560 		467 clusters
+
+
+__________
+After updated eigenexon clustering script
+
+deepsplit = 0		grey = 	1122		120 Clusters
+deepsplit = 1		grey = 	740	-382	172 Clusters	+52
+deepsplit = 2		grey = 	563	-177	255 Clusters	+83
+deepsplit = 3		grey =	476	-87	345 Clusters	+90
+deepsplit = 4		grey = 	441	-35	371 Clusters	+26

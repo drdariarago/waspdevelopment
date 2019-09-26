@@ -1,0 +1,10 @@
+t_nasdevexon<-t(nasdevexon[,1:30])
+t_nasdevexon<-apply(t_nasdevexon, c(1,2), function(x){ifelse(x>0,x,0)})
+pickSoftThreshold(t_nasdevexon, corOptions = list(method = "kendall", use = "pairwise.complete.obs"))
+adjacency<-adjacency(t_nasdevexon, power = 5, corOptions = list("method='kendall', use = 'pairwise.complete.obs'"))
+TOM=TOMsimilarity(adjacency, TOMType = "signed")
+dissTOM=1-TOM
+geneTree<-flashClust(as.dist(dissTOM), method="average")
+dynamicMods<-cutreeDynamic(dendro=geneTree, distM=dissTOM, deepSplit = 4, pamRespectsDendro = F, minClusterSize = 5)
+table(dynamicMods)
+plotDendroAndColors(geneTree, labels2colors(dynamicMods))
