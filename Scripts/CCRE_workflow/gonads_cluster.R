@@ -98,7 +98,7 @@ eigenexon_CCRE_representative <-
 
 # Merge with non-CCRE transcripts
 gonad_expr_CCRE <- 
-  gonad_expr_eigenexons_rescaled[-which(row.names(gonad_expr_eigenexons_rescaled) %in% CCREs$eigenexonID),] %>%
+  gonad_expr_eigenexons_rescaled[-which(row.names(gonad_expr_eigenexons_rescaled) %in% CCREs$transcriptID),] %>%
   rbind(., eigenexon_CCRE_representative)
   
 # Save
