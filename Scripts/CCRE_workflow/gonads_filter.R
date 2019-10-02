@@ -1,4 +1,5 @@
-### Gonad analyses
+### Extract expression values for gonads and associated whole-organism samples
+### Perform filtering for low-expressed genes and genes expressed in few samples
 
 library(magrittr)
 library(stringr)
@@ -6,19 +7,10 @@ library(plyr)
 library(WGCNA)
 
 ## Create output directories
-newdir<-file.path(getwd(), "Output/DE_gonads")
+newdir<-file.path(getwd(), "Output/gonads_filter")
 dir.create(newdir)
-graphdir<-file.path(getwd(), "Graphics/DE_gonads")
+graphdir<-file.path(getwd(), "Graphics/gonads_filter")
 dir.create(graphdir)
-
-
-# Load eigenexon assignments
-eigenexons_assignments <- read.csv("./Output/exon_to_transcript_clustering_rankingonly_adjusted/eigenexons_assignments.csv")
-
-## Load CCRE assignments
-CCREs <- read.csv(file = "./Output/CCREs/CCRE_assignments.csv")[,-1]
-names(CCREs) <- c("eigenexonID", "CCRE_ID", "Representative_Node")
-
 
 ## Import expression for gonads and respective whole-animal stages
 # Import exon-level expression
@@ -70,24 +62,3 @@ summary(goodGenes(datExpr = t(gonad_expr_raw)))
 gonad_expr <- gonad_expr_raw[which(goodGenes(datExpr = t(gonad_expr_raw))),]
 # Save as csv
 write.csv(x = gonad_expr, file = file.path(newdir, "gonad_exon_expr_postfiltering.csv"))
-
-## Bin eigenexons
-
-
-## Bin according to CCREs
-
-
-
-## Perform DE between ovaries and adult females
-
-
-## Perform DE between testes and male pupae
-
-
-## Categorize in: male gonads, female gonads, general gonads
-
-
-## Intersect with other DE data from development
-
-
-## Categorize proportion of Development DE from gonad expression
