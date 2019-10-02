@@ -3,6 +3,7 @@
 library(magrittr)
 library(stringr)
 library(plyr)
+library(WGCNA)
 
 ## Create output directories
 newdir<-file.path(getwd(), "Output/DE_gonads")
@@ -58,6 +59,17 @@ gonad_expr_raw <- gonad_expr_raw[which(row.names(gonad_expr_raw)%in%pass),]
 # How many exons are left?
 nrow(gonad_expr_raw)
 
+# Replace expression values below threshold with threshold value (effectively new zero)
+gonad_expr_raw <- apply(X = gonad_expr_raw, MARGIN = c(1,2), function(x){
+  ifelse(x<threshold, threshold, x)
+})
+# Subtract threshold value (rescales to new zero)
+gonad_expr_raw <- gonad_expr_raw-threshold
+# Filter out zero variance exons
+summary(goodGenes(datExpr = t(gonad_expr_raw)))
+gonad_expr <- gonad_expr_raw[which(goodGenes(datExpr = t(gonad_expr_raw))),]
+# Save as csv
+write.csv(x = gonad_expr, file = file.path(newdir, "gonad_exon_expr_postfiltering.csv"))
 
 ## Bin eigenexons
 
