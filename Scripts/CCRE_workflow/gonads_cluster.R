@@ -3,6 +3,7 @@
 library(FESTA)
 library(magrittr)
 library(stringr)
+library(WGCNA)
 
 ## Create output directories
 newdir<-file.path(getwd(), "Output/gonads_cluster")
@@ -42,27 +43,42 @@ eigenexons_assignments <- eigenexons_assignments[-which(eigenexons_assignments$g
 
 
 ## Bin eigenexons
-debugonce(FESTA::AverageExons)
 gonad_expr_eigenexons <- AverageExons(
   data = gonad_expr, 
   spliceID = eigenexons_assignments,
   splicingRatios = T,
   NAcorrection = T
 )
+write.csv(gonad_expr_eigenexons, file=file.path(newdir,"gonad_expr_eigenexons.csv"), row.names=F)
+
+## Normalize dataset
+
 
 ## Bin CCREs
 
+# Subset only CCRE transcripts
+eigenexon_CCRE <- gonad_expr_eigenexons[which(gonad_expr_eigenexons$transcriptID %in% CCREs$eigenexonID),]
 
-## Perform DE between ovaries and adult females
+# Create match table between row IDs and groups
+CCRE_lookup <- merge(
+  eigenexon_CCRE[,"transcriptID", drop=F], CCREs, 
+  by.x = 'transcriptID', by.y = 'eigenexonID',
+  all.x = T, all.y = F)
+
+# Create expression matrix for eigenexons that need to be converted to CCREs
+row.names(eigenexon_CCRE) <- eigenexon_CCRE$transcriptID
+eigenexon_CCRE_expression <- eigenexon_CCRE[,grep(pattern = "[0-3]$", x = colnames(eigenexon_CCRE))]
+eigenexon_CCRE_expression <- as.matrix(as.numeric(eigenexon_CCRE_expression))
+# Collapse CCREs
+
+CCRE_list <- collapseRows(
+  datET = eigenexon_CCRE, 
+  rowGroup = CCRE_lookup$CCRE_ID, 
+  rowID = CCRE_lookup$transcriptID, 
+  connectivityBasedCollapsing = TRUE, 
+  method = "MaxMean")
+
+# Merge with non-CCRE transcripts
 
 
-## Perform DE between testes and male pupae
-
-
-## Categorize in: male gonads, female gonads, general gonads
-
-
-## Intersect with other DE data from development
-
-
-## Categorize proportion of Development DE from gonad expression
+# Save
