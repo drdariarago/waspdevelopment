@@ -1,9 +1,11 @@
 ## Cluster gonad expression by eigenexon, normalize and then cluster by CCRE
 
-library(FESTA)
 library(magrittr)
 library(stringr)
+library(dplyr)
+
 library(WGCNA)
+library(FESTA)
 
 ## Create output directories
 newdir<-file.path(getwd(), "Output/gonads_cluster")
@@ -18,7 +20,7 @@ eigenexons_assignments <- eigenexons_assignments[,-4]
 
 ## Load CCRE assignments
 CCREs <- read.csv(file = "./Output/CCREs/CCRE_assignments.csv")[,-1]
-names(CCREs) <- c("eigenexonID", "CCRE_ID", "Representative_Node")
+names(CCREs) <- c("transcriptID", "CCRE_ID", "Representative_Node")
 
 ## Load filtered gonad expression data
 gonad_expr <- read.csv(file = "./Output/gonads_filter/gonad_exon_expr_postfiltering.csv", row.names = 1)
@@ -85,26 +87,20 @@ lapply(goodCols, function(x) {prop.table(table(x))})
 # Subset only CCRE transcripts
 eigenexon_CCRE <- gonad_expr_eigenexons_rescaled[which(row.names(gonad_expr_eigenexons_rescaled) %in% CCREs$eigenexonID),]
 
-# Create match table between row IDs and groups
-CCRE_lookup <- merge(
-  eigenexon_CCRE[,1 , drop=F], CCREs, 
-  by.x = 'row.names', by.y = 'eigenexonID',
-  all.x = T, all.y = F)[,-2]
-
-# Create expression matrix for eigenexons that need to be converted to CCREs
-row.names(eigenexon_CCRE) <- eigenexon_CCRE$transcriptID
-eigenexon_CCRE_expression <- eigenexon_CCRE[,grep(pattern = "[0-3]$", x = colnames(eigenexon_CCRE))]
-eigenexon_CCRE_expression <- as.matrix(as.numeric(eigenexon_CCRE_expression))
-
-# Collapse CCREs
-CCRE_list <- collapseRows(
-  datET = eigenexon_CCRE, 
-  rowGroup = CCRE_lookup$CCRE_ID, 
-  rowID = CCRE_lookup$transcriptID, 
-  connectivityBasedCollapsing = TRUE, 
-  method = "MaxMean")
+# Replace each CCRE only with its representative node, based on table used for main experiment
+eigenexon_CCRE_representative <-
+  merge(
+    CCREs, eigenexon_CCRE, by.x = 'transcriptID', by.y = 'row.names') %>% 
+  filter(., Representative_Node == TRUE) %>%
+  set_rownames(., .$transcriptID) %>%
+  select(., grep(pattern = "[0-3]$", x = colnames(.))
+  )
 
 # Merge with non-CCRE transcripts
-
-
+gonad_expr_CCRE <- 
+  gonad_expr_eigenexons_rescaled[-which(row.names(gonad_expr_eigenexons_rescaled) %in% CCREs$eigenexonID),] %>%
+  rbind(., eigenexon_CCRE_representative)
+  
 # Save
+
+write.csv(x = gonad_expr_CCRE, file = file.path(newdir, "gonad_expr_CCRE.csv"))
