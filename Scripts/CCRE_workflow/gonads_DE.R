@@ -46,3 +46,25 @@ design <- model.matrix(
     soma = "contr.sum")
 )
 design
+
+# Fit linear models
+glms<-lmFit(expr_list, design)
+glms2<-eBayes(glms)
+# Save exon models and EList
+save(file=file.path(newdir, "LIMMA_sexbias_gonads"), list=c("glms2"))
+
+# Apply fdr correction
+FDRfitall<-fdrtool(as.vector(glms2$p.value), statistic="pvalue", verbose=T)
+Fdrfitall<-matrix(FDRfitall$qval, 
+  ncol=ncol(glms2$p.value), nrow=nrow(glms2$p.value), 
+  dimnames=list(row.names(glms2$genes), colnames(glms2$p.value))) # add global (tail area based)
+fdrfitall<-matrix(FDRfitall$lfdr, 
+  ncol=ncol(glms2$p.value), nrow=nrow(glms2$p.value), 
+  dimnames=list(row.names(glms2$genes), colnames(glms2$p.value))) # local fdr (density based)
+
+# Save Fdr and fdr to base model
+glms2$Fdr<-Fdrfitall
+glms2$fdr<-fdrfitall
+
+# and save as csv
+write.csv(fdrfitall, file=file.path(newdir, "LIMMA_sexbias_gonads_fdr"))
