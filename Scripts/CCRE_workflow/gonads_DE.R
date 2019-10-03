@@ -19,24 +19,30 @@ gonad_expr <- read.csv(file = "./Output/gonads_cluster/gonad_expr_CCRE.csv", row
 
 ## Female soma vs gonads
 
-female_expr <- gonad_expr[, grepl("adult|ovaries", colnames(gonad_expr))]
-
 # Convert to expression list
-female_expr_list<-list(
-  E = as.matrix(female_expr), 
-  genes = as.character(female_expr),
-  targets=names(female_expr))
+expr_list<-list(
+  E = as.matrix(gonad_expr), 
+  genes = as.character(gonad_expr),
+  targets=names(gonad_expr))
 
 # Converting to LIMMA EList format
-female_expr_list<-new("EList", female_expr_list)
+expr_list<-new("EList", expr_list)
 
 # Create factors
-soma <- as.factor(ifelse(grepl("testes|ovaries", colnames(female_expr)), "Gonads", "Soma")) 
+soma <- factor(x = ifelse(grepl("testes|ovaries", colnames(gonad_expr)), "Gonads", "Soma"), 
+  levels = c("Soma", "Gonads")) 
+sex <- factor(x = ifelse(grepl("adult|ovaries", colnames(gonad_expr)), "Female", "Male"), 
+  levels = c("Female", "Male")) 
 
 # Create design matrix
-design <- model.matrix(
-  ~ soma, 
-  contrasts.arg=list(
-    soma="contr.treatment")
-)
+# Check male and female baseline separately
+# Contrast all gonads vs all soma
+# Contrast male gonads vs female gonads
 
+design <- model.matrix(
+  ~ 0 + sex * soma, 
+  contrasts.arg=list(
+    sex = "contr.treatment",
+    soma = "contr.sum")
+)
+design
