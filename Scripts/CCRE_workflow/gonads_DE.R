@@ -42,10 +42,11 @@ sex <- factor(x = ifelse(grepl("adult|ovaries", colnames(gonad_expr)), "Female",
 design <- model.matrix(
   ~ 0 + sex * soma, 
   contrasts.arg=list(
-    sex = "contr.treatment",
-    soma = "contr.sum")
+    sex = "contr.sum",
+    soma = "contr.treatment")
 )
-design
+
+data.frame(sex, soma, design)
 
 # Fit linear models
 glms<-lmFit(expr_list, design)
@@ -53,14 +54,20 @@ glms2<-eBayes(glms)
 # Save exon models and EList
 save(file=file.path(newdir, "LIMMA_sexbias_gonads"), list=c("glms2"))
 
+## Annotate contrast names in human-readable format
+
+contrast_names <- c("Female_Upregulated", "Male_Upregulated", "Gonads_vs_Soma", "Ovaries_vs_Testes")
+
 # Apply fdr correction
 FDRfitall<-fdrtool(as.vector(glms2$p.value), statistic="pvalue", verbose=T)
+
 Fdrfitall<-matrix(FDRfitall$qval, 
   ncol=ncol(glms2$p.value), nrow=nrow(glms2$p.value), 
-  dimnames=list(row.names(glms2$genes), colnames(glms2$p.value))) # add global (tail area based)
+  dimnames=list(row.names(glms2$genes), colnames(contrast_names))) 
+
 fdrfitall<-matrix(FDRfitall$lfdr, 
   ncol=ncol(glms2$p.value), nrow=nrow(glms2$p.value), 
-  dimnames=list(row.names(glms2$genes), colnames(glms2$p.value))) # local fdr (density based)
+  dimnames=list(row.names(glms2$genes), colnames(contrast_names))) 
 
 # Save Fdr and fdr to base model
 glms2$Fdr<-Fdrfitall
@@ -68,3 +75,5 @@ glms2$fdr<-fdrfitall
 
 # and save as csv
 write.csv(fdrfitall, file=file.path(newdir, "LIMMA_sexbias_gonads_fdr"))
+
+## Annotate genes with significant gonad enrichment and ovary vs testes enrichment
