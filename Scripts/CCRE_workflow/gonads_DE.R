@@ -92,3 +92,29 @@ threshold<-5*10^-2
 
 
 ## Save table of nodes, gonad vs soma bias and ovaries vs testes bias
+gonads_summary_signif <- glms2$fdr[,c(3,4)] %>%
+  apply(., c(1,2), function(x){
+    ifelse(x < threshold, 1, 0)
+  })
+
+gonads_summary_direction <- glms2$coefficients[,c(3,4)] %>%
+  apply(., c(1,2), sign)
+
+gonads_summary <- as.data.frame(gonads_summary_signif * gonads_summary_direction)
+
+# Filter only testes vs ovaries contrasts with significant gonad enrichment
+gonads_summary$Ovaries_vs_Testes <- factor(
+  x = gonads_summary$Ovaries_vs_Testes * (gonads_summary$Gonads_vs_Soma == 1),
+  levels = c(0,1,-1),
+  labels = c("Unbiased", "Female", "Male")
+)
+
+gonads_summary$Gonads_vs_Soma <- factor(
+  x = gonads_summary$Gonads_vs_Soma, 
+  levels = c(0,1,-1), 
+  labels = c("Unbiased", "Gonads", "Soma")
+)
+
+table(gonads_summary$Gonads_vs_Soma, gonads_summary$Ovaries_vs_Testes)
+
+write.csv(gonads_summary, file = file.path(newdir, "gonads_DE_summary.csv"))
