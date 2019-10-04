@@ -3,7 +3,7 @@
 library(stringr)
 library(magrittr)
 # library(reshape2)
-# library(plyr)
+library(plyr)
 library(limma)
 library(fdrtool)
 
@@ -63,11 +63,11 @@ FDRfitall<-fdrtool(as.vector(glms2$p.value), statistic="pvalue", verbose=T)
 
 Fdrfitall<-matrix(FDRfitall$qval, 
   ncol=ncol(glms2$p.value), nrow=nrow(glms2$p.value), 
-  dimnames=list(row.names(glms2$genes), colnames(contrast_names))) 
+  dimnames=list(row.names(glms2$p.value), contrast_names)) 
 
 fdrfitall<-matrix(FDRfitall$lfdr, 
   ncol=ncol(glms2$p.value), nrow=nrow(glms2$p.value), 
-  dimnames=list(row.names(glms2$genes), colnames(contrast_names))) 
+  dimnames=list(row.names(glms2$p.value), contrast_names)) 
 
 # Save Fdr and fdr to base model
 glms2$Fdr<-Fdrfitall
@@ -76,4 +76,19 @@ glms2$fdr<-fdrfitall
 # and save as csv
 write.csv(fdrfitall, file=file.path(newdir, "LIMMA_sexbias_gonads_fdr"))
 
-## Annotate genes with significant gonad enrichment and ovary vs testes enrichment
+
+## Summarize discoveries
+thresholds<-alply(c(5*10^-(1:5)), .margins = 1)
+names(thresholds) <- thresholds
+discoveries<-sapply(X = thresholds, FUN =  function(x){sum(c(glms2$fdr)<x)})
+false_disoveries<-discoveries*unlist(thresholds)
+fdr_table<-rbind(discoveries, false_disoveries)
+fdr_table # Choosing lfdr 0.05, expected 7703 false discoveries (individual prob for each gene 0.05)
+# Percent proportions of all contrasts
+(fdr_table/length(expr_list$E))*100
+
+# Set lfdr threshold
+threshold<-5*10^-2
+
+
+## Save table of nodes, gonad vs soma bias and ovaries vs testes bias
