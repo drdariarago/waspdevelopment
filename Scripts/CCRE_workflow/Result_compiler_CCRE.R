@@ -67,6 +67,11 @@ names(GlobalNetworkConcepts_nodes)[1] <- "nodeID"
 ## Load precompiled ODB8 counts from commented code at bottom script
 ODB8_Nas_EukOGs_genes <- read.csv(file = "./Output/Results_compiler_CCRE/ODB8_Nas_EukOGs_genes.csv")[,-1]
 
+## Load simplified gonad expression annotation
+gonad_annotation <- read.csv(file = "./Output/gonads_DE/gonads_DE_summary.csv", row.names = 1)
+
+
+
 #### Merge datasets (for each node or CCRE) (multiple nodes per CCREs are representative, check code)
 ## Merge gene annotation from different sources
 NVIT_OGS2<- NVIT_OGS2_goodannotcomplete[,c("geneID","Name","quality7","IntPred","LinkageCluster","Scaffold","recombrate","adult_female_meth_status")]
@@ -118,6 +123,17 @@ nodedata$event_type <- as.factor(ifelse(grepl("_fac", nodedata$eigenexonID), "sp
 sexbgenes <- nodedata[which(nodedata$event_type=="transcription"), c("geneID","devsexbias")]
 sexbgenes <- sexbgenes[grep(pattern = "[f,m]", x = sexbgenes$devsexbias),"geneID"]
 nodedata$sexbiasedgene <- ifelse(test = nodedata$geneID%in%sexbgenes, "Sexbiased","Unbiased")
+## Annotate gonad vs soma and testes vs ovaries expression
+gonad_annotation = data.frame(
+  eigenexonID = row.names(gonad_annotation),
+  gonad_bias = gonad_annotation$gonad_bias
+)
+nodedata <- merge(nodedata, gonad_annotation, 
+  by.x = "nodeID", by.y = "eigenexonID",
+  all.x = T, all.y = F)
+
+
+
 # Save dataset with all transcripts
 transcriptdata <- nodedata
 write.csv(x = transcriptdata, file = file.path(newdir, "transcriptdata.csv"))
@@ -139,6 +155,7 @@ transcriptdata[grep(pattern = "f.*m|m.*f", x = transcriptdata$devsexbias),]
 
 # Add CCRE metadata
 nodedata <-   merge(x = nodedata, y = CCRE_metadata, by.x = "nodeID", by.y = "CCREclust", all.x = T, all.y = F)
+
 ## Save as csv
 write.csv(x = nodedata, file = file.path(newdir, "transcriptdata_full.csv"))
 write.csv(x = nodedata[which(nodedata$Representative_Node==T|is.na(nodedata$Representative_Node)),-which(names(nodedata)=="Representative_Node")], file = file.path(newdir, "nodedata_full.csv"))
