@@ -5,6 +5,7 @@ rm(list=setdiff(ls(),"ODB8_EukOGs_genes"))
 # Load Packages
 library(reshape2)
 library(plyr)
+library(magrittr)
 library(stringr)
 library(vcd)
 library(ggplot2)
@@ -185,6 +186,23 @@ cluster_dup <- data.frame(clusterID = names(cluster_dup), excessDup = cluster_du
 ## Add proportion of nodes from methylated genes
 cluster_met <- prop.table(table(nodedata$clusterID, nodedata$adult_female_meth_status), margin = 1)[,"Methylated"]
 cluster_met <- data.frame(clusterID = names(cluster_met), excessMet = cluster_met/prop.table(table(nodedata$adult_female_meth_status))["Methylated"])
+## Add enrichment for testes and ovaries genes
+# Test if the proportion of testes-biased genes is greater in cluster than in genome
+nodedata %$%
+  table(
+    clusterID == "coral2",  
+    gonad_bias == "Testes", 
+    dnn = c("In_Cluster", "Biased")) %>%
+  {if (extract(., 4) < 5)  {
+    NA
+  } else {
+    fisher.test(., alternative = "greater") %$% 
+      p.value
+  }}
+
+## Repeat for all clusters
+## Repeat for testes, ovaries and gonads
+
 
 
 # ## Add metanetwork parameters
