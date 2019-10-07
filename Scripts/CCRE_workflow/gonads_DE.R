@@ -106,7 +106,7 @@ gonads_summary <- as.data.frame(gonads_summary_signif * gonads_summary_direction
 gonads_summary$Ovaries_vs_Testes <- factor(
   x = gonads_summary$Ovaries_vs_Testes * (gonads_summary$Gonads_vs_Soma == 1),
   levels = c(0,1,-1),
-  labels = c("Unbiased", "Female", "Male")
+  labels = c("Unbiased", "Ovaries", "Testes")
 )
 
 gonads_summary$Gonads_vs_Soma <- factor(
@@ -114,6 +114,16 @@ gonads_summary$Gonads_vs_Soma <- factor(
   levels = c(0,1,-1), 
   labels = c("Unbiased", "Gonads", "Soma")
 )
+
+gonads_summary$gonad_bias <-
+  ifelse(gonads_summary$Ovaries_vs_Testes == "Unbiased" & gonads_summary$Gonads_vs_Soma != "Unbiased", 
+    as.character(gonads_summary$Gonads_vs_Soma), 
+    as.character(gonads_summary$Ovaries_vs_Testes)
+  ) %>% 
+  factor(
+    x = ., 
+    levels = c("Unbiased", "Soma", "Gonads", "Testes", "Ovaries")
+  )
 
 table(gonads_summary$Gonads_vs_Soma, gonads_summary$Ovaries_vs_Testes)
 
