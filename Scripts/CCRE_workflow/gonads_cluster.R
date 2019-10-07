@@ -85,14 +85,14 @@ lapply(goodCols, function(x) {prop.table(table(x))})
 ## Bin CCREs
 
 # Subset only CCRE transcripts
-eigenexon_CCRE <- gonad_expr_eigenexons_rescaled[which(row.names(gonad_expr_eigenexons_rescaled) %in% CCREs$eigenexonID),]
+eigenexon_CCRE <- gonad_expr_eigenexons_rescaled[which(row.names(gonad_expr_eigenexons_rescaled) %in% CCREs$transcriptID),]
 
 # Replace each CCRE only with its representative node, based on table used for main experiment
 eigenexon_CCRE_representative <-
   merge(
     CCREs, eigenexon_CCRE, by.x = 'transcriptID', by.y = 'row.names') %>% 
   filter(., Representative_Node == TRUE) %>%
-  set_rownames(., .$transcriptID) %>%
+  set_rownames(., CCREs$CCRE_ID[match(.$transcriptID, CCREs$transcriptID)]) %>%
   select(., grep(pattern = "[0-3]$", x = colnames(.))
   )
 
