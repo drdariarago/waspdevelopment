@@ -48,7 +48,33 @@ tidyexpression_2 <-
     Expressed = max(Expressed)
   )
 
+## Report number of expressed transcripts per stage
+table(tidyexpression_2$Expressed, tidyexpression_2$Stage)
 
-# nodedata <- read.csv(
-#   file = "./Output/Results_compiler_CCRE/nodedata_full.csv", 
-#   row.names = 2)[,-1]
+## Merge with differential expression from main analysis
+# This step helps us calculate proportions and compare with gene-level analyses
+
+nodedata <- read_csv(
+  file = "./Output/Results_compiler_CCRE/nodedata_full.csv")[,-1] %>%
+  select(., 
+    nodeID = nodeID,
+    transcriptID = eigenexonID,
+    geneID = geneID, 
+    devsexbias = devsexbias
+    ) %>%
+  tidyr::extract(
+    data = ., col = devsexbias, 
+    into = c("emb10", "emb18", "lar51", "pupyel", "adult"), 
+    regex = "(.)(.)(.)(.)(.)"
+  ) %>%
+  pivot_longer(
+    ., cols = -ends_with("ID"), 
+    names_to = "Stage", 
+    names_ptypes = list( 
+      Stage = factor(levels =  c("emb10", "emb18", "lar51", "pupyel", "adult"))),
+    values_to = "sexbias"
+  )
+
+
+# add new factor that counts the number of m and f at each position
+
