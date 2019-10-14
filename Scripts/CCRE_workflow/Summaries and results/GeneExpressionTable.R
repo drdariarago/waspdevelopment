@@ -54,10 +54,10 @@ table(tidyexpression_2$Expressed, tidyexpression_2$Stage)
 ## Merge with differential expression from main analysis
 # This step helps us calculate proportions and compare with gene-level analyses
 
-nodedata <- 
+transcriptdata <- 
   # Import dataset
   read_csv(
-    file = "./Output/Results_compiler_CCRE/nodedata_full.csv")[,-1] %>%
+    file = "./Output/Results_compiler_CCRE/transcriptdata_full.csv")[,-1] %>%
   select(., 
     nodeID = nodeID,
     transcriptID = eigenexonID,
@@ -82,7 +82,7 @@ nodedata <-
 # Merge datasets
 
 biasdata <- merge(
-  x = nodedata, y = tidyexpression_2, 
+  x = transcriptdata, y = tidyexpression_2, 
   by = c("transcriptID", "Stage", "geneID"), 
   all.x = T, all.y = F
 ) %>%
@@ -93,4 +93,16 @@ biasdata <- merge(
   group_by(.data = .,
     nodeID, transcriptID, geneID, Stage)
 
-# Create report table
+# Create report table for transcripts
+group_by(.data = biasdata, transcriptID, Stage) %>%
+  summarise(.data = .,
+    Expressed = max(Expressed),
+    F_bias = max(F_bias),
+    M_bias = max(M_bias)
+  ) %>%
+  group_by(.data = ., Stage) %>%
+  summarise(.data = ., 
+    Expressed = sum(Expressed),
+    F_bias = sum(F_bias),
+    M_bias = sum(M_bias)
+  )
