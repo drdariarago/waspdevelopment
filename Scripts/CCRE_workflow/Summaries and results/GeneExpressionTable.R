@@ -94,7 +94,7 @@ biasdata <- merge(
     nodeID, transcriptID, geneID, Stage)
 
 # Create report table for transcripts
-group_by(.data = biasdata, transcriptID, Stage) %>%
+transcript_counts <- group_by(.data = biasdata, transcriptID, Stage) %>%
   summarise(.data = .,
     Expressed = max(Expressed),
     F_bias = max(F_bias),
@@ -106,3 +106,27 @@ group_by(.data = biasdata, transcriptID, Stage) %>%
     F_bias = sum(F_bias),
     M_bias = sum(M_bias)
   )
+
+transcript_counts
+# Calculate percent DE genes of the total genes expressed in that stage
+transcript_counts[,4:3]/transcript_counts$Expressed * 100
+
+
+## Create report table for genes
+
+gene_counts <- group_by(.data = biasdata, geneID, Stage) %>%
+  summarise(.data = .,
+    Expressed = max(Expressed),
+    F_bias = max(F_bias),
+    M_bias = max(M_bias)
+  ) %>%
+  group_by(.data = ., Stage) %>%
+  summarise(.data = ., 
+    Expressed = sum(Expressed),
+    F_bias = sum(F_bias),
+    M_bias = sum(M_bias)
+  )
+
+gene_counts
+# Calculate percent DE genes of the total genes expressed in that stage
+gene_counts[,4:3]/gene_counts$Expressed * 100
