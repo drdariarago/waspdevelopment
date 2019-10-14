@@ -35,13 +35,18 @@ tidyexpression <- pivot_longer(
   values_to = "Expression"
 )
 
-## Calculate how many transcripts have expression >0 for 2/3 replicates
+## Calculate how many transcripts have expression >0 for 2/3 replicates in at least one sex
 
-
-
-## Bin by stage (at least one of the two sexes is expressed)
-
-## Bin by gene (at least one of their transcripts are expressed)
+tidyexpression_2 <- 
+  group_by(.data = tidyexpression, transcriptID, Stage, Sex) %>%
+  summarise(., 
+    geneID = first(geneID),
+    Expressed = sum(Expression > 0) > 2
+  ) %>% 
+  summarise(., 
+    geneID = first(geneID),
+    Expressed = max(Expressed)
+  )
 
 
 # nodedata <- read.csv(
