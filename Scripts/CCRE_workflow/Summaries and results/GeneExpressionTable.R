@@ -54,27 +54,43 @@ table(tidyexpression_2$Expressed, tidyexpression_2$Stage)
 ## Merge with differential expression from main analysis
 # This step helps us calculate proportions and compare with gene-level analyses
 
-nodedata <- read_csv(
-  file = "./Output/Results_compiler_CCRE/nodedata_full.csv")[,-1] %>%
+nodedata <- 
+  # Import dataset
+  read_csv(
+    file = "./Output/Results_compiler_CCRE/nodedata_full.csv")[,-1] %>%
   select(., 
     nodeID = nodeID,
     transcriptID = eigenexonID,
     geneID = geneID, 
     devsexbias = devsexbias
-    ) %>%
+  ) %>%
+  # Decompress devsexbias
   tidyr::extract(
     data = ., col = devsexbias, 
     into = c("emb10", "emb18", "lar51", "pupyel", "adult"), 
     regex = "(.)(.)(.)(.)(.)"
   ) %>%
+  # Stack stages in new factor
   pivot_longer(
     ., cols = -ends_with("ID"), 
     names_to = "Stage", 
     names_ptypes = list( 
       Stage = factor(levels =  c("emb10", "emb18", "lar51", "pupyel", "adult"))),
     values_to = "sexbias"
-  )
+  ) 
 
+# Merge datasets
 
-# add new factor that counts the number of m and f at each position
+biasdata <- merge(
+  x = nodedata, y = tidyexpression_2, 
+  by = c("transcriptID", "Stage", "geneID"), 
+  all.x = T, all.y = F
+) %>%
+  mutate(.data = .,
+    F_bias = sexbias == "f",
+    M_bias = sexbias == "m"
+  ) %>%
+  group_by(.data = .,
+    nodeID, transcriptID, geneID, Stage)
 
+# Create report table
