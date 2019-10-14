@@ -188,21 +188,43 @@ cluster_met <- prop.table(table(nodedata$clusterID, nodedata$adult_female_meth_s
 cluster_met <- data.frame(clusterID = names(cluster_met), excessMet = cluster_met/prop.table(table(nodedata$adult_female_meth_status))["Methylated"])
 ## Add enrichment for testes and ovaries genes
 # Test if the proportion of testes-biased genes is greater in cluster than in genome
-nodedata %$%
-  table(
-    clusterID == "coral2",  
-    gonad_bias == "Testes", 
-    dnn = c("In_Cluster", "Biased")) %>%
-  {if (extract(., 4) < 5)  {
-    NA
-  } else {
-    fisher.test(., alternative = "greater") %$% 
-      p.value
-  }}
 
-## Repeat for all clusters
-## Repeat for testes, ovaries and gonads
+gonad_enrichment <- function(clusterIDs, test_type) {
+  nodedata %$%
+    table(
+      clusterID == clusterIDs,  
+      gonad_bias == test_type, 
+      dnn = c("In_Cluster", "Biased")) %>%
+      {if (extract(., 4) < 5)  {
+        NA
+      } else {
+        fisher.test(., alternative = "greater") %$% 
+          p.value
+      }}
+}
 
+
+testes = list(levels(nodedata$clusterID)) 
+for (c in levels(nodedata$clusterID)) {
+  testes[c] = gonad_enrichment(clusterID = c, test_type = "Testes")
+}
+ovaries = list(levels(nodedata$clusterID)) 
+for (c in levels(nodedata$clusterID)) {
+  ovaries[c] = gonad_enrichment(clusterID = c, test_type = "Ovaries")
+}
+gonads = list(levels(nodedata$clusterID)) 
+for (c in levels(nodedata$clusterID)) {
+  gonads[c] = gonad_enrichment(clusterID = c, test_type = "Gonads")
+}
+
+# Compile intod data.frame and apply FDR correction
+
+gonad_cluster_enrichment = data.frame(
+  clusterID = names(testes[-1]),
+  testes_enrichment = testes[-1] %>% unlist() %>% p.adjust(method = "fdr"),
+  ovaries_enrichment = ovaries[-1] %>% unlist() %>% p.adjust(method = "fdr"),
+  gonads_enrichment = gonads[-1] %>% unlist() %>% p.adjust(method = "fdr")
+)
 
 
 # ## Add metanetwork parameters
@@ -227,6 +249,7 @@ clusterdata <- merge(clusterdata, medianKME, by = "clusterID", all = T)
 # clusterdata <- merge(clusterdata, metanetwork, by = "clusterID", all = T)
 clusterdata <- merge(clusterdata, clusterDE, by = "clusterID", all = T)
 clusterdata <- merge(clusterdata, DIDC, by = "clusterID", all = T)
+clusterdata <- merge(clusterdata, gonad_cluster_enrichment, by = "clusterID", all = T)
 head(clusterdata)
 
 ## Save as csv
@@ -267,9 +290,15 @@ sapply(X = names(genelists), FUN = function(x){
 write(x = as.character(transcriptdata[grep(pattern = "_con", x = transcriptdata$eigenexonID),]$geneID), file = file.path(newdir, "genelists_con", "universe.txt"))
 
 # Gene counts of sexbiased nodes (at least one per gene)
-genesummary <- ddply(.data = transcriptdata, .variables = .(geneID), .fun = summarize, 
-                     malebiased = any(grepl(pattern = "m", x = devsexbias)),
-                     femalebiased = any(grepl(pattern = "f", x = devsexbias))
+genesummary <- ddply(
+  .data = transcriptdata, 
+  .variables = .(geneID), 
+  .fun = summarize, 
+  malebiased = any(grepl(pattern = "m", x = devsexbias)),
+  femalebiased = any(grepl(pattern = "f", x = devsexbias)),
+  testesbiased = any(gonad_bias == "Testes"),
+  ovariesbiased = any(gonad_bias == "Ovaries"),
+  gonadsbiased = any(gonad_bias == "Gonads")
 )
 genesummary$bothbiased <- with(genesummary, malebiased&femalebiased)
 summary(genesummary)
