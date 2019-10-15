@@ -142,7 +142,10 @@ biasdata_gonads <-
     all.x = T, all.y = T, 
     by = "nodeID"
   ) %>%
-  filter(., !is.na(sexbias))
+  filter(., !is.na(sexbias)) %>%
+  mutate(.,
+    gonad_bias = ifelse(is.na(gonad_bias), 0, gonad_bias)
+  )
 
 transcript_counts_gonads <- 
   group_by(.data = biasdata_gonads, transcriptID, Stage) %>%
@@ -161,3 +164,22 @@ transcript_counts_gonads <-
   )
 
 transcript_counts_gonads
+
+
+gene_counts_gonads <- 
+  group_by(.data = biasdata_gonads, geneID, Stage) %>%
+  summarise(.data = .,
+    M_testes = max(sexbias == "m" & gonad_bias == "Testes"),
+    M_soma = max(sexbias == "m" & gonad_bias != "Testes"),
+    F_ovaries = max(sexbias == "f" & gonad_bias == "Ovaries"),
+    F_soma = max(sexbias == "f" & gonad_bias != "Ovaries")
+  ) %>%
+  group_by(.data = ., Stage) %>%
+  summarise(.data = ., 
+    M_testes = sum(M_testes, na.rm = T),
+    M_soma = sum(M_soma, na.rm = T),
+    F_ovaries = sum(F_ovaries, na.rm = T),
+    F_soma = sum(F_soma, na.rm = T)
+  )
+
+gene_counts_gonads
