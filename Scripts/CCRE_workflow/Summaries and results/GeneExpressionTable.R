@@ -130,3 +130,34 @@ gene_counts <- group_by(.data = biasdata, geneID, Stage) %>%
 gene_counts
 # Calculate percent DE genes of the total genes expressed in that stage
 gene_counts[,4:3]/gene_counts$Expressed * 100
+
+## Import gonad expression and compare with stage-by-stage gene expression
+gonaddata <- 
+  read_csv(file = "./Output/gonads_DE/gonads_DE_summary.csv") %>%
+  set_colnames(., c("nodeID", "Gonad_vs_Soma", "Ovaries_vs_Testes", "gonad_bias"))
+
+biasdata_gonads <- 
+  merge(
+    x = gonaddata[,c("nodeID", "gonad_bias")], y = transcriptdata,
+    all.x = T, all.y = T, 
+    by = "nodeID"
+  ) %>%
+  filter(., !is.na(sexbias))
+
+transcript_counts_gonads <- 
+  group_by(.data = biasdata_gonads, transcriptID, Stage) %>%
+  summarise(.data = .,
+    M_testes = sexbias == "m" & gonad_bias == "Testes",
+    M_soma = sexbias == "m" & gonad_bias != "Testes",
+    F_ovaries = sexbias == "f" & gonad_bias == "Ovaries",
+    F_soma = sexbias == "f" & gonad_bias != "Ovaries"
+  ) %>%
+  group_by(.data = ., Stage) %>%
+  summarise(.data = ., 
+    M_testes = sum(M_testes, na.rm = T),
+    M_soma = sum(M_soma, na.rm = T),
+    F_ovaries = sum(F_ovaries, na.rm = T),
+    F_soma = sum(F_soma, na.rm = T)
+  )
+
+transcript_counts_gonads
