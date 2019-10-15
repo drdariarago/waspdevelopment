@@ -128,3 +128,10 @@ gonads_summary$gonad_bias <-
 table(gonads_summary$Gonads_vs_Soma, gonads_summary$Ovaries_vs_Testes)
 
 write.csv(gonads_summary, file = file.path(newdir, "gonads_DE_summary.csv"))
+
+## Save SM table: fdr and fold-change for gonads vs soma and testes vs ovaries
+cbind(glms2$coefficients, glms2$fdr[,c("Gonads_vs_Soma", "Ovaries_vs_Testes")]) %>%
+  set_colnames(., 
+    c("Female_Baseline", "Male_Baseline", "Gonad_Soma_Fold", "Testes_Ovaries_fold", "Gonad_Soma_fdr", "Ovaries_Testes_fdr")
+  ) %>% 
+  write.csv(x = ., file = file.path(newdir, "Gonads_fold_fdr.csv"))
