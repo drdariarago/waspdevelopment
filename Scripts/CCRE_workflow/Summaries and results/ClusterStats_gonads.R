@@ -42,6 +42,7 @@ clusterbias <- clusterdata %>%
   ) %>%
   # Recode sex bias as male, female, unbiased or both
   summarise(.data = .,
+    nGenes = first(nGenes),
     DI = first(DI),
     testes = first(testes_enrichment),
     ovaries = first(ovaries_enrichment),
@@ -53,8 +54,30 @@ clusterbias <- clusterdata %>%
       "both"
     } else {"unbiased"}
   ) %>%
+  # convert NAs in testes and ovary bias to 1 (unbiased), then binarize
   mutate(.data = ., 
-    sexbias = as.factor(sexbias)
+    sexbias = as.factor(sexbias),
+    testes = ifelse(is.na(testes), 1, testes) %>% is_less_than(0.05),
+    ovaries = ifelse(is.na(ovaries), 1, testes) %>% is_less_than(0.05)
   )
       
 clusterbias
+
+## Count malebias genes with and without testes enrichment
+clusterbias %>%
+  group_by(sexbias == "male", testes
+    ) %>%
+  summarise(.data = .,
+    nGenes = sum(nGenes),
+    nClusters = n()
+  )
+
+## Count femalebiased genes with and without testes enrichment
+clusterbias %>%
+  group_by(sexbias == "female", ovaries
+  ) %>%
+  summarise(.data = .,
+    nGenes = sum(nGenes),
+    nClusters = n()
+  )
+
