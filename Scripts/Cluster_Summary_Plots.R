@@ -222,7 +222,19 @@ taxprop_cluster <- droplevels(taxprop_cluster[which(taxprop_cluster$Stratum!="No
 taxprop_cluster$Stratum <- factor(x = taxprop_cluster$Stratum, labels = c("Nasonia", "Hymenoptera", "Insecta", "Arthropoda", "Metazoa"))
 
 # Plot
-ggplot(data = taxprop_cluster, mapping = aes(x = DIDE, y = Proportion, col = DIDE)) + geom_boxplot(varwidth = T) + theme_bw() + facet_grid(. ~ Stratum) + ggtitle(label = "Taxonomic Depth of Nodes in Sex-Biased Clusters") + ylab(label = "Excess Proportion of Nodes from Stratum") + xlab(label = "") + theme(panel.grid.major.x=element_blank(), axis.text.x = element_blank(), axis.ticks = element_blank()) + scale_color_manual(values = cbPalette, name = "Sex-Bias Type") + scale_linetype_discrete(name = "Differentially\nCorrelated") + theme(legend.position = "bottom")
+ggplot(data = taxprop_cluster, mapping = aes(x = DIDE, y = Proportion, col = DIDE)) +
+  geom_boxplot(varwidth = T) + 
+  theme_bw() + 
+  facet_grid(. ~ Stratum) + 
+  ggtitle(label = "Taxonomic Depth of Nodes in Sex-Biased Clusters") + 
+  ylab(label = "Excess Proportion of Nodes from Stratum") + 
+  xlab(label = "") + 
+  theme(
+    panel.grid.major.x=element_blank(), 
+    axis.text.x = element_blank(), axis.ticks = element_blank()) + 
+  scale_color_manual(values = cbPalette, name = "Sex-Bias Type") + 
+  scale_linetype_discrete(name = "Differentially\nCorrelated") + 
+  theme(legend.position = "bottom")
 # + geom_point(position = position_jitter(width = 0.1, height = 0), alpha = "0.5")
 ggsave(filename = file.path(graphdir, "PhyloStrata_boxplot.pdf"), device = "pdf", width = textWidthHeightmm[1], height = textWidthHeightmm[2]/2, units = "mm")
 
@@ -398,8 +410,10 @@ prop.table(table(nodebias5$sexbiasedgene, nodebias5$sexbiasedspl), margin = 2)
 
 mosaicplot(x = table(nodebias5$sexbiasedgene, nodebias5$sexbiasedspl), shade = T, main = "Proportions of Genes with \nSex-Biased Transcription and Splicing")
 
+## Proportion plot before manual edits
+
 pdf(file = file.path(graphdir, "TransVsSpl.pdf"), width = textWidthHeightmm[1]*.039/2, height = textWidthHeightmm[1]*.039/2, useDingbats = F)
-mosaicplot(x = table(nodebias5$sexbiasedspl, nodebias5$sexbiasedgene), main = NULL, color = c(cbPalette[6:8]), )
+mosaicplot(x = table(nodebias5$sexbiasedspl, nodebias5$sexbiasedgene), main = NULL, color = c(cbPalette[6:8]))
 dev.off()
 
 # # Retain only gene ID duplicates with the smallest index

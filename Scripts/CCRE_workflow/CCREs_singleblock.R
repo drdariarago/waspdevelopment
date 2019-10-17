@@ -52,35 +52,6 @@ ddply(.data = m_nasdevgeneexon, .variables = .(con), summarize,
 m_nasdevgeneexon[which(m_nasdevgeneexon$con==T),"value"] <- 
   m_nasdevgeneexon[which(m_nasdevgeneexon$con==T),"value"]/max(m_nasdevgeneexon[which(m_nasdevgeneexon$con==T),"value"], na.rm = T)
 
-# ## Pick noise threshold based on density plots (separate for splicing and transcription)
-# dlply(.data = m_nasdevgeneexon, .variables = .(con), .fun = summarize,
-#       quant = quantile(x = value, probs = c(0.5, 0.66, 0.9, 0.99))
-# )
-# 
-# distr_pre<- ggplot(data=m_nasdevgeneexon, aes(x=value, col=con))+
-#   geom_density()+theme_bw()+
-#   geom_vline(xintercept = c(-0.7, 0.3, 1.6, 2.3), col="pink")+
-#   geom_vline(xintercept = c(-0.2, 0.5, 1.5, 2.1), col="blue")
-# 
-# ## Set nodes below respective thresholds to threshold value (effectively zero of respective distributions)
-# m_nasdevgeneexon <- ddply(.data = m_nasdevgeneexon, .variables = .(con), .fun = summarize, 
-#                           variable = variable, 
-#                           value = ifelse(value <= quantile(x = value, probs = 0.45), quantile(x = value, probs = 0.45), value),
-#                           sampleID = sampleID,
-#                           con = con
-# )
-# 
-# # Normalize transcription and splicing nodes separately
-# m_nasdevgeneexon_z<-ddply(.data = m_nasdevgeneexon, .variables = .(con), summarize, 
-#                           variable=variable, 
-#                           value=z(value),
-#                           sampleID=sampleID)
-# 
-# # Recast into sample x node format
-# t_nasdevgeneexon<-recast(m_nasdevgeneexon_z[,2:4], sampleID~variable)
-# row.names(t_nasdevgeneexon)<-t_nasdevgeneexon$sampleID
-# t_nasdevgeneexon<-t_nasdevgeneexon[,-1]
-
 # Recast into sample x node format
 t_nasdevgeneexon<-recast(m_nasdevgeneexon[,1:3], sampleID~variable)
 row.names(t_nasdevgeneexon)<-t_nasdevgeneexon$sampleID

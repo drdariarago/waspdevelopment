@@ -46,7 +46,7 @@ dir.create(graphdir)
 ## Number of biased splicing nodes which do not also have sexbiased transcription at the same stage
 
 
-## Same, with number of clusters
+## Number of sex-biased clusters per stage
 clusterGLMsummaries <- read.csv(file = "./Output/DEcluster_analysis_CCRE/clusterGLMsummaries.csv")[,-1]
 clusterGLMsummaries$stage <- factor(x = clusterGLMsummaries$stage, levels = c("emb10","emb18","lar51","pupyel","adult"))
 clusterGLMsummaries$sex <- sign(clusterGLMsummaries$coeff*(clusterGLMsummaries$fdr<0.05))
