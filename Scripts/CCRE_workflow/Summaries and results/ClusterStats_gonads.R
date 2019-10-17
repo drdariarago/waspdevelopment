@@ -22,7 +22,8 @@ clusterbias <- clusterdata %>%
     nGenes = nGenes,
     DI = DiffIntegrated, 
     testes_enrichment = testes_enrichment,
-    ovaries_enrichment = ovaries_enrichment
+    ovaries_enrichment = ovaries_enrichment,
+    gonads_enrichment = gonads_enrichment
   ) %>%
   # Decompress devsexbias
   tidyr::extract(
@@ -46,6 +47,7 @@ clusterbias <- clusterdata %>%
     DI = first(DI),
     testes = first(testes_enrichment),
     ovaries = first(ovaries_enrichment),
+    gonads = first(gonads_enrichment),
     sexbias = if(any(sexbias == "m") & all(sexbias != "f")){
       "male"
     } else if(any(sexbias == "f") & all(sexbias != "m")){
@@ -58,10 +60,20 @@ clusterbias <- clusterdata %>%
   mutate(.data = ., 
     sexbias = as.factor(sexbias),
     testes = ifelse(is.na(testes), 1, testes) %>% is_less_than(0.05),
-    ovaries = ifelse(is.na(ovaries), 1, testes) %>% is_less_than(0.05)
+    ovaries = ifelse(is.na(ovaries), 1, ovaries) %>% is_less_than(0.05),
+    gonads= ifelse(is.na(gonads), 1, gonads) %>% is_less_than(0.05)
   )
       
 clusterbias
+
+## Select clusters with bot DE and DC
+
+clusterbias %>%
+  filter(.,
+    grepl('adult', DI),
+    sexbias != 'unbiased'
+  ) %>%
+  view()
 
 ## Count malebias genes with and without testes enrichment
 clusterbias %>%
