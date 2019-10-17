@@ -154,7 +154,10 @@ transcript_counts_gonads <-
     M_soma = sexbias == "m" & gonad_bias != "Testes",
     F_ovaries = sexbias == "f" & gonad_bias == "Ovaries",
     F_soma = sexbias == "f" & gonad_bias != "Ovaries"
-  ) %>%
+  ) 
+
+## Break down by stage
+transcript_counts_gonads %>%
   group_by(.data = ., Stage) %>%
   summarise(.data = ., 
     M_testes = sum(M_testes, na.rm = T),
@@ -163,7 +166,16 @@ transcript_counts_gonads <-
     F_soma = sum(F_soma, na.rm = T)
   )
 
-transcript_counts_gonads
+## Counts for entire development
+
+transcript_counts_gonads %>%
+  group_by(.data = .) %>%
+  summarise(.data = ., 
+    M_testes = sum(M_testes, na.rm = T),
+    M_soma = sum(M_soma, na.rm = T),
+    F_ovaries = sum(F_ovaries, na.rm = T),
+    F_soma = sum(F_soma, na.rm = T)
+  )
 
 
 gene_counts_gonads <- 
@@ -173,7 +185,10 @@ gene_counts_gonads <-
     M_soma = max(sexbias == "m" & gonad_bias != "Testes"),
     F_ovaries = max(sexbias == "f" & gonad_bias == "Ovaries"),
     F_soma = max(sexbias == "f" & gonad_bias != "Ovaries")
-  ) %>%
+  ) 
+
+## Summarize by stage
+gene_counts_gonads %>%
   group_by(.data = ., Stage) %>%
   summarise(.data = ., 
     M_testes = sum(M_testes, na.rm = T),
@@ -182,4 +197,13 @@ gene_counts_gonads <-
     F_soma = sum(F_soma, na.rm = T)
   )
 
-gene_counts_gonads
+## For entire development
+
+gene_counts_gonads %>%
+  group_by(.data = .) %>%
+  summarise(.data = ., 
+    M_testes = sum(M_testes, na.rm = T),
+    M_soma = sum(M_soma, na.rm = T),
+    F_ovaries = sum(F_ovaries, na.rm = T),
+    F_soma = sum(F_soma, na.rm = T)
+  )
